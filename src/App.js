@@ -2,21 +2,16 @@ import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
 
+var _ = require('lodash') //lodash
+
 const Stars = (props) => {
-  const numberOfStars = 1 + Math.floor(Math.random() * 9);
-
-  let stars = [];
-
-  for (let i = 0; i < numberOfStars; i++) {
-    stars.push(
-      <i key={i} className="fa fa-star"></i>
-    );
-  }
+  //const numberOfStars = 1 + Math.floor(Math.random() * 9);
 
   return (
     <div className="col-md-5">
-      {stars}
-      
+      {_.range(props.numberOfStars).map(i =>
+        <i key={i} className="fa fa-star"></i>
+      )}
     </div>
   );
 }
@@ -32,40 +27,74 @@ const Button = (props) => {
 const Answer = (props) => {
   return (
     <div className="col-md-5">
-      <span>5</span>
-      <span>6</span>
+      {props.selectedNumbers.map((number, i) =>
+        <span key={i} 
+              onClick = {() => props.unselectNumber(number)}>
+          {number}
+        </span>
+      )}
     </div>
   );
 }
 
 const Numbers = (props) => {
-  const arrayOfNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  const numberClassName = (number) => {
+    if(props.selectedNumbers.indexOf(number) >= 0){
+      return 'selected';
+    }
+  }
   return (
     <div className="card text-center">
       <div>
-        {/* <span>1</span>
-      <span className="selected">2</span>
-      <span className="used">3</span> */}
-        {arrayOfNumbers.map((number, i) =>
-          <span key={i}>{number}</span>
+        {Numbers.list.map((number, i) =>
+          <span key={i} className={numberClassName(number)}
+                onClick = {() => props.selectNumber(number)}>
+            {number}
+          </span>
         )}
       </div>
     </div>
   );
-}
+};
+
+Numbers.list = _.range(1, 10);
 
 class Game extends Component {
+  state = {
+    selectedNumbers: [],
+    randomNumberOfStars: 1 + Math.floor(Math.random() * 9),
+  };
+
+  selectNumber = (clickedNumber) => {
+    if(this.state.selectedNumbers.indexOf(clickedNumber) >= 0){
+      return;
+    }
+    this.setState(prevState => ({
+      selectedNumbers: prevState.selectedNumbers
+                                .concat(clickedNumber)
+    }));
+  };
+
+  unselectNumber = (clickedNumber) => {
+    this.setState(prevState => ({
+      selectedNumbers: prevState.selectedNumbers
+                                .filter(number => number !== clickedNumber)
+    }));
+  };
+
   render() {
     return (
       <div className="container">
         <h3>Play Nine</h3>
         <div className="row">
-          <Stars />
+          <Stars numberOfStars = {this.state.randomNumberOfStars}/>
           <Button />
-          <Answer />
+          <Answer selectedNumbers = {this.state.selectedNumbers}
+                  unselectNumber = {this.unselectNumber}/>
         </div>
         <br />
-        <Numbers />
+        <Numbers selectedNumbers = {this.state.selectedNumbers}
+                  selectNumber = {this.selectNumber}/>
       </div>
     );
   }
@@ -78,7 +107,7 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
+          <h1 className="App-title">Welcome to Ledtin's game</h1>
         </header>
         <p className="App-intro">
           To get started, edit <code>src/App.js</code> and save to reload.
